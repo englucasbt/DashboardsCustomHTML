@@ -1,0 +1,193 @@
+{
+    "$schema": "https://vega.github.io/schema/vega/v5.json",
+    "description": "A basic line chart example.",
+    "width": 500,
+    "height": 200,
+    "padding": 5,
+    "signals": [
+        {
+            "name": "interpolate",
+            "value": "monotone"
+        }
+    ],
+    "data": [
+        {
+            "name": "table",
+            "values": [
+                {
+                    "date": "28/07/2020, 17:25",
+                    "x": 6,
+                    "y": 28,
+                    "c": 0
+                },
+                {
+                    "date": "28/07/2020, 17:25",
+                    "x": 7,
+                    "y": 43,
+                    "c": 0
+                },
+                {
+                    "date": "28/07/2020, 17:25",
+                    "x": 8,
+                    "y": 81,
+                    "c": 0
+                },
+                {
+                    "date": "28/07/2020, 17:25",
+                    "x": 9,
+                    "y": 19,
+                    "c": 0
+                }
+            ]
+        }
+    ],
+    "scales": [
+        {
+            "name": "x",
+            "type": "linear",
+            "range": "width",
+            "nice": true,
+            "zero": false,
+            "domain": {
+                "data": "table",
+                "field": "x"
+            }
+        },
+        {
+            "name": "y",
+            "type": "linear",
+            "range": "height",
+            "nice": true,
+            "zero": false,
+            "domain": {
+                "data": "table",
+                "field": "y"
+            }
+        },
+        {
+            "name": "color",
+            "type": "ordinal",
+            "range": "category",
+            "domain": {
+                "data": "table",
+                "field": "c"
+            }
+        }
+    ],
+    "axes": [
+        {
+            "orient": "bottom",
+            "scale": "x",
+            "title": "Dia do Lote",
+            "titleFontWeight": "normal",
+            "grid": true,
+            "tickMinStep": 1
+        },
+        {
+            "orient": "left",
+            "scale": "y",
+            "title": "Conversão alimentar",
+            "titleFontWeight": "normal",
+            "grid": true
+        }
+    ],
+    "marks": [
+        {
+            "type": "group",
+            "from": {
+                "facet": {
+                    "name": "series",
+                    "data": "table",
+                    "groupby": "c"
+                }
+            },
+            "marks": [
+                {
+                    "type": "line",
+                    "from": {
+                        "data": "series"
+                    },
+                    "encode": {
+                        "enter": {
+                            "x": {
+                                "scale": "x",
+                                "field": "x"
+                            },
+                            "y": {
+                                "scale": "y",
+                                "field": "y"
+                            },
+                            "stroke": {
+                                "scale": "color",
+                                "field": "c"
+                            },
+                            "strokeWidth": {
+                                "value": 2
+                            }
+                        },
+                        "update": {
+                            "tooltip": {
+                                "signal": "datum"
+                            },
+                            "interpolate": {
+                                "signal": "interpolate"
+                            },
+                            "strokeOpacity": {
+                                "value": 1
+                            }
+                        },
+                        "hover": {
+                            "strokeOpacity": {
+                                "value": 0.5
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "symbol",
+                    "from": {
+                        "data": "series"
+                    },
+                    "encode": {
+                        "enter": {
+                            "x": {
+                                "scale": "x",
+                                "field": "x"
+                            },
+                            "y": {
+                                "scale": "y",
+                                "field": "y"
+                            },
+                            "stroke": {
+                                "scale": "color",
+                                "field": "c"
+                            },
+                            "strokeWidth": {
+                                "value": 0.1
+                            },
+                            "fill": {
+                                "value": "steelblue"
+                            }
+                        },
+                        "update": {
+                            "tooltip": {
+                                "signal": "{'Data': datum.date, 'Dia do lote': datum.x, 'KPI': datum.y}"
+                            },
+                            "interpolate": {
+                                "signal": "interpolate"
+                            },
+                            "strokeOpacity": {
+                                "value": 1
+                            }
+                        },
+                        "hover": {
+                            "strokeOpacity": {
+                                "value": 0.5
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

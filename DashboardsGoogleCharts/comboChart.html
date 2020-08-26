@@ -1,0 +1,168 @@
+
+<script
+type="text/javascript"
+src="https://www.gstatic.com/charts/loader.js"
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+</script>
+
+<style>
+body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+.select {
+margin-top: 0%;
+text-align: right;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 11px;
+}
+</style>
+
+<div id="select" class="select">
+<select name="comboboxLote" id="comboboxLote" onchange="drawChart()">
+</select>
+
+<select name="comboboxLoteDay" id="comboboxLoteDay" onchange="drawChart()">
+  <option value="7"selected>Semanal</option>
+  <option value="30">Mensal</option>
+  <option value="366">Anual</option>>
+  <option value="1001">Todo lote</option>>
+</select>
+</div>
+
+<script type="text/javascript">
+var googleLoaded = false
+var drawChart = function() {
+  if (!googleLoaded) {
+    return
+  }
+  var data = [['Label', 'Value']]
+  
+  if (DashboardBlock.input.queries.dataTable.items) {
+    data = DashboardBlock.input.queries.dataTable.items[1].currentFeedWeightSilo
+  }
+  
+  // Ordenar array de objetos sequenciais por atributo
+  function sortfunction(a, b){
+    return (a[0] - b[0]) 
+  }
+    
+  
+  // Consulta geral da tabela:
+  var data = DashboardBlock.input.queries.dataTable.items;
+
+  /* -- Populando o comobobx com os lotes disponíveis -- */
+
+//Selecionando os lotes
+    var dataLote = data.map(function(point) {
+      return (point.lote)
+    });
+    const lotesList = [ ...new Set( dataLote ) ];
+    //lotesList.push(2);
+    var sizeArrayLoteList = lotesList.length
+    var currentLote = lotesList[sizeArrayLoteList-1];
+
+    //Se ComboboxLote estiver vazio, popula:
+    if ( comboboxLote.length === 0){
+
+      //Criando o item lote para identificar o comobobox e atribuindo o valor o útimo lote para o mesmo;
+      option = new Option("Lote", currentLote);
+      comboboxLote.options[comboboxLote.options.length] = option;
+      
+      //Insere os lotes disponíveis no comboboxLote
+      lotesList.forEach((lotes) => {
+        option = new Option(lotes, lotes);
+        comboboxLote.options[comboboxLote.options.length] = option;
+      });
+    }
+    
+    //Selecionando Lote
+    var comboboxLoteSelect = document.getElementById("comboboxLote").value;
+    const filterLote = data => data.lote == comboboxLoteSelect
+    var resultLoteObj = data.filter(filterLote);
+
+    /* -- Filtrando por agregação: -- */
+    var comboboxLoteDay = document.getElementById("comboboxLoteDay").value;
+    
+    //Selecionando o dia atual do lote
+    var dayLote = resultLoteObj.map(function(point) {
+      return (point.loteDay).toFixed(0)
+    });
+    var lastLoteDay = Math.max(...dayLote);
+    var filtro = lastLoteDay - comboboxLoteDay;
+    //document.getElementById("mainEngine").innerHTML = filtro
+    
+    //Filtrando baseando na opção selecionada
+    const filterLoteDay = data => data.loteDay >= filtro
+    var resultLoteDayObj = resultLoteObj.filter(filterLoteDay);
+
+
+  //Selecionando Lote
+  //var comboboxLote = document.getElementById("comboboxLote").value;
+  //const filterLote = data => data.lote == comboboxLote
+  //var resultLoteObj = data.filter(filterLote);
+  var arraySizeResultLoteObj = resultLoteDayObj.length
+
+
+  //document.getElementById("mainEngine").innerHTML = JSON.stringify(data);
+  //document.getElementById("mainEngine").innerHTML = JSON.stringify(resultLoteObj)
+  //document.getElementById("mainEngine").innerHTML = resultLoteObj[0].currentFeedWeightSilo
+  data = []
+  data = [['Dia do Lote', 'Temp [ºC]', 'Temp Max [ºC]', 'Temp Min [ºC]', 'CO2 [ppm]', 'Consumo de água [L]', 'Consumo de ração [kg]']]
+  for(let i = 0; i < arraySizeResultLoteObj; i++) {
+    data.push([resultLoteDayObj[i].loteDay, resultLoteDayObj[i].temperature, resultLoteDayObj[i].temperatureMax, resultLoteDayObj[i].temperatureMin, resultLoteDayObj[i].co2, resultLoteDayObj[i].waterConsumption1, resultLoteDayObj[i].feedConsumption]);
+  }
+  data.sort(sortfunction);
+  //document.getElementById("mainEngine").innerHTML = JSON.stringify(data);
+  data = google.visualization.arrayToDataTable(data)
+  var options = {
+    title : '',
+    width: DashboardBlock.input.size.width,
+    height: DashboardBlock.input.size.height -25,
+    chartArea:{width:"75%",height:"60%"},
+    colors: ['red', 'C91F18', 'F5837F', '5590DB', '00579D', 'BF731C'],
+        //hAxis: { title: "Dia do Lote", format: 'm/d/y'},
+    hAxis: { title: "Dia do Lote", format: '0', viewWindowMode: "maximized"},
+     
+    
+    vAxes: {
+      0:{title: "ºC", textPosition: 'out'},
+      1:{title: "ºC", textPosition: 'out'},
+      2:{title: "ºC", textPosition: 'out'},
+      3:{title: "ppm", textPosition: 'in'},
+      4:{title: "L", textPosition: 'in'},
+      5:{title: "kg e L", textPosition: 'out'}
+      
+          },
+    
+    legend: { position: 'bottom', alignment: 'center' },
+    backgroundColor: { fill:'transparent' },
+    
+          series: {
+      0: { type: "line", targetAxisIndex: 0},
+      1: { type: "line", targetAxisIndex: 0},
+      2: { type: "line", targetAxisIndex: 0},
+      3: { type: "line", targetAxisIndex: 3},
+      4: { type: "bars", targetAxisIndex: 5}, //HABILITAR ESCALA LITROS
+      5: { type: "bars", targetAxisIndex: 5},
+    },
+
+  };
+  var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+  
+  chart.draw(data, options)
+}
+
+DashboardBlock.on('change', drawChart)
+
+google.charts.load('current', {'packages':['line', 'corechart']});
+google.charts.setOnLoadCallback(function() {
+  googleLoaded = true
+  drawChart()
+})
+</script>
+
+<div id="chart_div"></div>
+<div id="mainEngine"></div>
